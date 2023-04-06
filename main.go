@@ -98,10 +98,17 @@ func login(args ...string) {
 		"sts", "assume-role-with-saml",
 		"--role-arn", rolearn,
 		"--principal-arn", principalarn,
-		"--saml-assertion", samlAssertion,
+		"--saml-assertion", "file:////dev/stdin",
 	)
 	var stdout bytes.Buffer
 	var stderr bytes.Buffer
+
+	stdin, err := cmd.StdinPipe()
+	if err != nil {
+		printAndExit(fmt.Sprintf("Failed running aws cli: %s\n%s", err, stderr.String), 5)
+	}
+	io.WriteString(stdin, samlAssertion)
+	stdin.Close()
 
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
