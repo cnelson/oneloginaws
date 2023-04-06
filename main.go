@@ -8,6 +8,7 @@ import (
 	"github.com/cnelson/oneloginaws/client"
 	"github.com/namsral/flag"
 	"golang.org/x/term"
+	"io"
 	"os"
 	"os/exec"
 	"strings"
@@ -50,11 +51,10 @@ func login(args ...string) {
 		out := "Required flags:\n"
 		out += "They may be specified as environment varibes with the prefix ONELOGINAWS_, for example ONELOGINAWS_APPID\n"
 		var b bytes.Buffer
-		buf := bufio.NewWriter(&b)
-		fs.SetOutput(buf)
+		fs.SetOutput(io.Writer(&b))
 		fs.PrintDefaults()
 
-		out += b.String() + "\n\n"
+		out += b.String() + "\n"
 
 		out += "This app expects to be able to read two lines from stdin:\n"
 		out += " - The first line is the password for the user.\n"
@@ -134,7 +134,7 @@ func printAndExit(content string, exitCode int) {
 	if term.IsTerminal(int(os.Stdout.Fd())) {
 		fmt.Println(content)
 	} else {
-		fmt.Printf(`echo "%s"`, strings.Replace(content, `"`, `\"`, -1))
+		fmt.Printf(`echo -e "%s"`, strings.Replace(strings.Replace(content, `"`, `\"`, -1), "\n", `\n`, -1))
 	}
 	os.Exit(exitCode)
 
